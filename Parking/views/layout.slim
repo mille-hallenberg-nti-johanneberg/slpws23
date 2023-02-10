@@ -7,8 +7,18 @@ html lang="en"
     title Document
   body
     nav
-      a href="/showregister" Register
-      a href="/showlogin" Login
+      p="Logged in as #{session["username"]}" 
+
+      -if session["id"] == nil
+        a href="/showregister" Register
+        br
+        a href="/showlogin" Login
+        br
+      
+      -if session["id"] != nil
+        a href="/showposts" Your posts
+        br
+      a href="/showglobalposts" Explore
     h1 Parking - Snarking
 
     == yield

@@ -5,11 +5,20 @@ h2 Create a new post!
 a href="/showcreatepost" Create
 
 -posts.each do |post|
-    p = "#{post["content"]}"
-    
-    form action="todos/#{post['id']}/delete" method="POST"
-        input type="submit" value="Remove"/ 
+    div
+        p = "#{post["data"]}"
+        
+        -showStatus = ""
+        -if post["global"].to_i == 1 
+            -showStatus = "Global"
+        -else
+            -showStatus = "Not Global"
 
-    form action="todos/#{post['id']}/update" method="GET"
-        input type="submit" value="Edit"/ 
+        p = "Status: #{showStatus}"
+
+        form action="posts/#{post['id']}/delete" method="POST"
+            input type="submit" value="Remove"/ 
+
+        form action="posts/#{post['id']}/update" method="GET"
+            input type="submit" value="Edit"/ 
     

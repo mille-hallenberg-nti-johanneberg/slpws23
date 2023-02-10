@@ -21,16 +21,6 @@ enable :sessions
 #   slim(:"todos/update", locals:{id:params[:id]})
 # end
 
-# post("/todos/:id/delete") do
-#   id = params[:id].to_i
-#   p "Detta är note id #{id}"
-#   db = SQLite3::Database.new("db/todo2022.db")
-#   db.results_as_hash = true 
-
-#   db.execute("DELETE FROM todos WHERE id = ?", id).first
-#   redirect("/todos")
-# end
-
 # post("/todos/:id/update") do
 #   id = params[:id].to_i
 #   p "Detta är note id #{id}"
@@ -79,6 +69,7 @@ post("/login") do
 
   if BCrypt::Password.new(pwdigest) == password
     session["id"] = id
+    session["username"] = username
     p "Login Successful"
     redirect("/showposts")
   else
@@ -114,13 +105,30 @@ get("/showposts") do
 end
 
 post("/posts/new") do
-  content = params[:content]
+  streetName = params[:streetName]
+  
+  isGlobal = 0
+  if params[:isGlobal] == "on" 
+    isGlobal = 1
+  end
+
+  p "This is the status of GLOBAL: #{isGlobal}"
 
   db = SQLite3::Database.new("db/parking.db")
   db.results_as_hash = true 
 
-  db.execute("INSERT INTO posts (user_id, data) VALUES (?, ?)", session["id"], content).first
-  redirect("/todos")
+  db.execute("INSERT INTO posts (user_id, data, global) VALUES (?, ?, ?)", session["id"], streetName, isGlobal).first
+  redirect("/showposts")
+end
+
+post("/posts/:id/delete") do
+  id = params[:id].to_i
+  # p "Detta är note id #{id}"
+  db = SQLite3::Database.new("db/parking.db")
+  db.results_as_hash = true 
+
+  db.execute("DELETE FROM posts WHERE id = ?", id).first
+  redirect("/showposts")
 end
 
 # TODO: Gör en sida som visar ALLA posts som är globala
@@ -128,8 +136,8 @@ get("/showglobalposts") do
   id = session[:id].to_i  
   db = SQLite3::Database.new("db/parking.db")
   db.results_as_hash = true 
-  result = db.execute("SELECT * FROM posts WHERE user_id = ?", id)
-  p("Alla posts from result: #{result}" )
+  result = db.execute("SELECT * FROM posts WHERE global = 1")
+  # p("Alla posts from result: #{result}" )
   slim(:"posts/index", locals:{posts:result})
 end
 
