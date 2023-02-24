@@ -7,18 +7,23 @@ html lang="en"
     title Document
   body
     nav
-      p="Logged in as #{session["username"]}" 
-
+      h1 Parking - Snarking
+      -if isLoggedIn()
+         p="Logged in as #{session["username"]}."
+      -else
+        p="Not logged in."
       -if session["id"] == nil
         a href="/showregister" Register
         br
         a href="/showlogin" Login
-        br
+      -else
+        form action="/logout" method="POST" 
+          input type="submit" value="Log out"
+      br
       
-      -if session["id"] != nil
+      -if isLoggedIn()
         a href="/showposts" Your posts
         br
       a href="/showglobalposts" Explore
-    h1 Parking - Snarking
 
     == yield

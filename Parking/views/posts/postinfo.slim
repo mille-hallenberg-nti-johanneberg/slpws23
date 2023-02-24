@@ -1,9 +1,7 @@
-h2 Update your todo!
-
-form action="/posts/#{locals[:id]}/update" method="POST"
+form action="posts/new" method="POST"
     input type="text" name="streetName" placeholder="Street Name"
     br
     label = "Make post global" 
     input type="checkbox" name="isGlobal" placeholder="Is Global"
     br    
-    input type="submit" value="Update Post"/
+    input type="submit" value="Create Post"/

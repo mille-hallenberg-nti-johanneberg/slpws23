@@ -3,6 +3,8 @@ require 'slim'
 require 'sqlite3'
 require 'bcrypt'
 require 'sinatra/reloader'
+require_relative('model.rb')
+# require ''
 
 enable :sessions
 
@@ -77,6 +79,15 @@ post("/login") do
   end
 end
 
+post("/logout") do
+  if session["id"] != nil
+    session["id"] = nil
+    session["username"] = nil
+  end
+
+  redirect("/")
+end
+
 post("/users/new") do
     username = params[:username]
     password = params[:password]
@@ -112,8 +123,6 @@ post("/posts/new") do
     isGlobal = 1
   end
 
-  p "This is the status of GLOBAL: #{isGlobal}"
-
   db = SQLite3::Database.new("db/parking.db")
   db.results_as_hash = true 
 
@@ -128,6 +137,31 @@ post("/posts/:id/delete") do
   db.results_as_hash = true 
 
   db.execute("DELETE FROM posts WHERE id = ?", id).first
+  redirect("/showposts")
+end
+
+# Visar update-slimmen och skickar in information om user-posten som ska
+# uppdateras
+get("/posts/:id/update") do
+  content = params[:content]
+  slim(:"posts/update", locals:{id:params[:id]})
+end
+
+# Uppdatera user-posten 
+post("/posts/:id/update") do
+  id = params[:id].to_i
+  streetName = params[:streetName]
+
+  isGlobal = 0
+  if params[:isGlobal] == "on" 
+    isGlobal = 1
+  end
+
+  p "The id of the post which is being edited: #{id}"
+  db = SQLite3::Database.new("db/parking.db")
+  db.results_as_hash = true 
+
+  db.execute("UPDATE posts SET data = ?, global = ? WHERE id = ?", streetName, isGlobal, id).first
   redirect("/showposts")
 end
 
