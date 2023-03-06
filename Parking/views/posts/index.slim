@@ -5,7 +5,7 @@ h2 Create a new post!
 a href="/showcreatepost" Create
 
 -posts.each do |post|
-    div
+    div.box
         p = "#{post["data"]}"
         
         -showStatus = ""
@@ -16,9 +16,20 @@ a href="/showcreatepost" Create
 
         p = "Status: #{showStatus}"
 
-        form action="posts/#{post['id']}/delete" method="POST"
-            input type="submit" value="Remove"/ 
+        / Saker som t.ex. edit och delete ska bara finnas där post gjort av ägaren.
+        -if getUserId() == post["user_id"]
+            form action="posts/#{post['id']}/delete" method="POST"
+                input type="submit" value="Remove"/ 
 
-        form action="posts/#{post['id']}/update" method="GET"
-            input type="submit" value="Edit"/ 
+            form action="posts/#{post['id']}/update" method="GET"
+                input type="submit" value="Edit"/ 
+
+        / Saker som t.ex. dislike och like ska bara vara tillgänglig för de som har loggat in och det inte är ens egna post
+        -if isLoggedIn() && getUserId() != post["user_id"]
+            form action="posts/#{post['id']}/like" method="POST"
+                input type="submit" value="Like"/ 
+
+            form action="posts/#{post['id']}/dislike" method="GET"
+                input type="submit" value="Dislike"/ 
+
     
