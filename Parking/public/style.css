@@ -11,3 +11,25 @@
     display: flex;
     flex-direction: column;
 }
+
+.opinion_texture {
+    max-width: 50px;
+    max-height: 50px;
+    margin-right:-50px;
+    transition-duration:0.2s;
+}
+
+.opinion_button {
+    margin-left: 0px;
+    margin-right: 0px;
+    height:50px;
+    width:50px;
+    opacity:0; 
+}
+
+.opinion_buttons {
+    width:auto;
+
+    display:flex;
+    flex-direction: row;
+}

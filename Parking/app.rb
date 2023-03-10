@@ -174,6 +174,44 @@ get("/showglobalposts") do
   slim(:"posts/index", locals:{posts:result})
 end
 
+#Skapa en like/dislike
+post("/posts/like/:post_id/new/:value") do
+  post_id = params[:post_id].to_i
+  like_value = params[:value].to_i
+  # p "Detta är note id #{id}"
+  db = SQLite3::Database.new("db/parking.db")
+  db.results_as_hash = true 
+
+  db.execute("INSERT INTO users_likes_posts_rel (user_id, post_id, value) VALUES (?, ?, ?)", session["id"], post_id, like_value).first
+  redirect("/showglobalposts")
+end
+
+#Uppdatera värdet på en like/dislike
+post("/posts/like/:post_id/update/:value") do
+  post_id = params[:post_id].to_i
+  like_value = params[:value]
+
+  if opinionOnPostIs(post_id, like_value)
+      redirect("posts/like/#{post_id}/delete")
+  end
+
+  db = SQLite3::Database.new("db/parking.db")
+  db.results_as_hash = true 
+
+  db.execute("UPDATE users_likes_posts_rel SET value = ? WHERE post_id = ? AND user_id = ?", like_value, post_id, session["id"]).first
+  redirect("/showglobalposts")
+end
+
+post("/posts/like/:post_id/delete") do
+  post_id = params[:post_id].to_i
+  # p "Detta är note id #{id}"
+  db = SQLite3::Database.new("db/parking.db")
+  db.results_as_hash = true 
+
+  db.execute("DELETE FROM users WHERE user_id = ?, post_id", session["id"], post_id).first
+  redirect("/showposts")
+end
+
 # get("/todos") do
 #   id = session[:id].to_i  
 #   db = SQLite3::Database.new("db/todo2022.db")

@@ -6,7 +6,7 @@ a href="/showcreatepost" Create
 
 -posts.each do |post|
     div.box
-        p = "#{post["data"]}"
+        p = "#{post["data"]}, posted by #{getUsername(post["user_id"])}"
         
         -showStatus = ""
         -if post["global"].to_i == 1 
@@ -26,10 +26,46 @@ a href="/showcreatepost" Create
 
         / Saker som t.ex. dislike och like ska bara vara tillgänglig för de som har loggat in och det inte är ens egna post
         -if isLoggedIn() && getUserId() != post["user_id"]
-            form action="posts/#{post['id']}/like" method="POST"
-                input type="submit" value="Like"/ 
+            / Skapar en like ifall användaren inte redan har gillat/ogillat
+            -route = "posts/like/#{post['id']}/"
+            -like_value = 0
 
-            form action="posts/#{post['id']}/dislike" method="GET"
-                input type="submit" value="Dislike"/ 
+            -if !hasOpinionOnPost(post["id"])
+                -route += "new/"
+            / Annars uppdateras like:n
+            -else
+                -route += "update/"
+
+            -like_png_src = "img/like_"
+            -dislike_png_src = "img/dislike_"
+            -if !hasOpinionOnPost(post["id"])
+                -like_png_src += "unactive"
+                -dislike_png_src += "unactive"
+            -else
+                -if opinionOnPostIs(post["id"], 1)
+                    -like_png_src += "active"
+                    -dislike_png_src += "unactive"
+                -else
+                    -like_png_src += "unactive"
+                    -dislike_png_src += "active"
+
+            -like_png_src += ".png"
+            -dislike_png_src += ".png"
+
+            div.opinion_buttons
+                / Gilla-knappen
+                img.opinion_texture src=like_png_src alt="like_icon"
+                    form action="#{route}#{1}" method="POST"
+                        input.opinion_button type="submit" value="Like"
+                / Ogilla-knappen
+                img.opinion_texture src=dislike_png_src alt="dislike_icon"
+                    form action="#{route}#{-1}" method="POST"
+                        input.opinion_button type="submit" value="Dislike"
+
+            
+
+            
+
+        / -if opinionOnPostIs(post["id"], 1)
 
     
