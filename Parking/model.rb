@@ -24,26 +24,16 @@ end
 #     end
 # end
 
+def getUserIdByPost(post_id)
+    return getDB().execute("SELECT user_id FROM posts WHERE id = ?", post_id).first[0].to_i
+end
+
 helpers do 
     # Hämta databas
     def getDB()
         db = SQLite3::Database.new("db/parking.db")
         db.results_as_hash = true 
         return db
-    end
-
-    # Funktion som returner true ifall man har loggat in.
-    def isLoggedIn()
-        return session["id"] != nil
-    end
-
-    #Funktion som returnerar id på användaren.
-    def getUserId()
-        if session["id"] == nil
-            return -1
-        end
-
-        return session["id"].to_i
     end
 
     #Funktion som returnerar id på användaren.
@@ -60,5 +50,13 @@ helpers do
     #Funktion som kollar ifall användare har gillat/ogillat post
     def hasOpinionOnPost(post_id)
         return getDB().execute("SELECT * FROM users_likes_posts_rel WHERE post_id = ? AND user_id = ?", post_id, getUserId()).length > 0
+    end
+
+    def getAmountOfOpinionsOnPost(post_id)
+        return getDB().execute("SELECT * FROM users_likes_posts_rel WHERE post_id = ?", post_id).count.to_i
+    end
+
+    def getOpinionRatioOnPost(post_id)
+        return getDB().execute("SELECT * FROM users_likes_posts_rel WHERE post_id = ? AND value = 1", post_id).count.to_f / getDB().execute("SELECT * FROM users_likes_posts_rel WHERE post_id = ?", post_id).count.to_f 
     end
 end

@@ -6,7 +6,8 @@ a href="/showcreatepost" Create
 
 -posts.each do |post|
     div.box
-        p = "#{post["data"]}, posted by #{getUsername(post["user_id"])}"
+        b = "#{post["data"]}"
+        p = "Posted by #{getUsername(post["user_id"])}"
         
         -showStatus = ""
         -if post["global"].to_i == 1 
@@ -62,8 +63,15 @@ a href="/showcreatepost" Create
                     form action="#{route}#{-1}" method="POST"
                         input.opinion_button type="submit" value="Dislike"
 
-            
+        - opinion_amount = getAmountOfOpinionsOnPost(post["id"])
 
+        - if opinion_amount == 0
+            p There are no likes yet.
+        - else 
+            - person_or_people = "person"
+            - if opinion_amount > 1
+                -person_or_people = "people"
+            p #{getOpinionRatioOnPost(post["id"]) * 100}% of #{opinion_amount} #{person_or_people} likes this post
             
 
         / -if opinionOnPostIs(post["id"], 1)

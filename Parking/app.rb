@@ -122,45 +122,58 @@ post("/posts/new") do
     isGlobal = 1
   end
 
-  db = SQLite3::Database.new("db/parking.db")
-  db.results_as_hash = true 
+  if POSTRequestApproved(getUserId())
+    db = SQLite3::Database.new("db/parking.db")
+    db.results_as_hash = true 
 
-  db.execute("INSERT INTO posts (user_id, data, global) VALUES (?, ?, ?)", session["id"], streetName, isGlobal).first
+    db.execute("INSERT INTO posts (user_id, data, global) VALUES (?, ?, ?)", getUserId(), streetName, isGlobal).first
+  end
+
   redirect("/showposts")
 end
 
 post("/posts/:id/delete") do
-  id = params[:id].to_i
-  # p "Detta är note id #{id}"
-  db = SQLite3::Database.new("db/parking.db")
-  db.results_as_hash = true 
+  post_id = params[:id].to_i
+  
+  if POSTRequestApproved(getUserIdByPost(post_id))
+    db = SQLite3::Database.new("db/parking.db")
+    db.results_as_hash = true 
 
-  db.execute("DELETE FROM posts WHERE id = ?", id).first
+    db.execute("DELETE FROM posts WHERE id = ?", post_id).first
+  end
+
   redirect("/showposts")
 end
 
 # Visar update-slimmen och skickar in information om user-posten som ska
 # uppdateras
 get("/posts/:id/update") do
-  content = params[:content]
-  slim(:"posts/update", locals:{id:params[:id]})
+  if !POSTRequestApproved(getUserIdByPost(params[:id]).to_i)
+    p "FAIL"
+    slim(:shamecorner)
+  else
+    content = params[:content]
+    slim(:"posts/update", locals:{id:params[:id]})
+  end
 end
 
 # Uppdatera user-posten 
 post("/posts/:id/update") do
-  id = params[:id].to_i
+  post_id = params[:id].to_i
   streetName = params[:streetName]
 
   isGlobal = 0
   if params[:isGlobal] == "on" 
     isGlobal = 1
   end
+  
+  if POSTRequestApproved(getUserIdByPost(post_id))
+    db = SQLite3::Database.new("db/parking.db")
+    db.results_as_hash = true 
 
-  p "The id of the post which is being edited: #{id}"
-  db = SQLite3::Database.new("db/parking.db")
-  db.results_as_hash = true 
+    db.execute("UPDATE posts SET data = ?, global = ? WHERE id = ?", streetName, isGlobal, post_id).first
+  end
 
-  db.execute("UPDATE posts SET data = ?, global = ? WHERE id = ?", streetName, isGlobal, id).first
   redirect("/showposts")
 end
 
@@ -178,11 +191,14 @@ end
 post("/posts/like/:post_id/new/:value") do
   post_id = params[:post_id].to_i
   like_value = params[:value].to_i
-  # p "Detta är note id #{id}"
-  db = SQLite3::Database.new("db/parking.db")
-  db.results_as_hash = true 
 
-  db.execute("INSERT INTO users_likes_posts_rel (user_id, post_id, value) VALUES (?, ?, ?)", session["id"], post_id, like_value).first
+  if POSTRequestApproved(getUserId())
+    db = SQLite3::Database.new("db/parking.db")
+    db.results_as_hash = true 
+
+    db.execute("INSERT INTO users_likes_posts_rel (user_id, post_id, value) VALUES (?, ?, ?)", getUserId(), post_id, like_value).first
+  end
+  
   redirect("/showglobalposts")
 end
 
@@ -191,14 +207,17 @@ post("/posts/like/:post_id/update/:value") do
   post_id = params[:post_id].to_i
   like_value = params[:value]
 
-  if opinionOnPostIs(post_id, like_value)
+  if POSTRequestApproved(getUserId())
+    if opinionOnPostIs(post_id, like_value)
       redirect("posts/like/#{post_id}/delete")
+    end
+
+    db = SQLite3::Database.new("db/parking.db")
+    db.results_as_hash = true 
+
+    db.execute("UPDATE users_likes_posts_rel SET value = ? WHERE post_id = ? AND user_id = ?", like_value, post_id, getUserId()).first
   end
-
-  db = SQLite3::Database.new("db/parking.db")
-  db.results_as_hash = true 
-
-  db.execute("UPDATE users_likes_posts_rel SET value = ? WHERE post_id = ? AND user_id = ?", like_value, post_id, session["id"]).first
+    
   redirect("/showglobalposts")
 end
 
@@ -208,15 +227,32 @@ post("/posts/like/:post_id/delete") do
   db = SQLite3::Database.new("db/parking.db")
   db.results_as_hash = true 
 
-  db.execute("DELETE FROM users WHERE user_id = ?, post_id", session["id"], post_id).first
+  if POSTRequestApproved(getUserId())
+    db.execute("DELETE FROM users WHERE user_id = ?, post_id", getUserId(), post_id).first
+  end
+
   redirect("/showposts")
 end
 
-# get("/todos") do
-#   id = session[:id].to_i  
-#   db = SQLite3::Database.new("db/todo2022.db")
-#   db.results_as_hash = true 
-#   result = db.execute("SELECT * FROM todos WHERE user_id = ?", id)
-#   p("Alla todos from result: #{result}" )
-#   slim(:"todos/index", locals:{todos:result})
-# end
+# Kontrollerar att requesten för någon sorts POST är gjort av rätt användare (behöver vara inloggad och användar-id behöver stämma)
+def POSTRequestApproved(id_in_question)
+  p id_in_question
+  p getUserId()
+  return isLoggedIn() && (getUserId() == id_in_question || getUserId() == 2389579830124)
+end
+
+helpers do
+  # Funktion som returner true ifall man har loggat in.
+  def isLoggedIn()
+    return session["id"] != nil
+  end
+
+  #Funktion som returnerar id på användaren.
+  def getUserId()
+    if session["id"] == nil
+      return -1
+    end
+
+    return session["id"].to_i
+  end
+end
