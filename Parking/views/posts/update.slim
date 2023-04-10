@@ -1,9 +1,19 @@
-h2 Update your todo!
+h2 Update todo...
 
 form action="/posts/#{locals[:id]}/update" method="POST"
-    input type="text" name="streetName" placeholder="Street Name"
+    / Namn på gatan
+    input type="text" name="streetName" placeholder="Street Name" value="#{locals[:streetName]}"
     br
+    
+    / Global checkbox
     label = "Make post global" 
-    input type="checkbox" name="isGlobal" placeholder="Is Global"
+    -if global_value=locals[:global] == 1
+        input type="checkbox" name="isGlobal" placeholder="Is Global" checked=""
+    -else
+        input type="checkbox" name="isGlobal" placeholder="Is Global"
     br    
+
+    / Update-knapp
     input type="submit" value="Update Post"/
+    form action="/privateposts" method="GET"
+        input type="submit" value="Cancel"/

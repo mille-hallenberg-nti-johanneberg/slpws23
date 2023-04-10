@@ -8,11 +8,19 @@ html lang="en"
   body
     nav
       h1 Parking - Snarking
+
+      / Status på inloggning, vem man är och ifall man är admin eller inte.
+      -loggedInStatus = "Not logged in."
       -if isLoggedIn()
-         p="Logged in as #{session["username"]}."
-      -else
-        p="Not logged in."
-      -if session["id"] == nil
+        -loggedInStatus = "Logged in as #{session["username"]} - Normal User"
+        -if isAdmin()
+          -loggedInStatus = "Logged in as #{session["username"]} - Admin"
+      
+      p="#{loggedInStatus}"
+      
+      / Ifall användaren är inte är inloggad, visa länkar för att registrera/logga in.
+      / Ifall användaren är inloggad, visa en knapp för att logga ut.
+      -if !isLoggedIn()
         a href="/showregister" Register
         br
         a href="/showlogin" Login
@@ -21,9 +29,14 @@ html lang="en"
           input type="submit" value="Log out"
       br
       
+      / Ifall användaren är inloggad, visa en länk som tar användaren till sina egna posts och en länk för att skapa en post.
       -if isLoggedIn()
-        a href="/showposts" Your posts
+        a href="/privateposts" Your posts
         br
-      a href="/showglobalposts" Explore
+        a href="/showcreatepost" Create Post
+        br
+      
+      / Länk för att användare, inloggad eller ej ska kunna utforska andras posts.
+      a href="/globalposts" Explore
 
     == yield

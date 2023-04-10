@@ -44,7 +44,7 @@ helpers do
 
     #Funktion som kollar ifall input matchar användarens like status på post
     def opinionOnPostIs(post_id, opinion)
-        return getDB().execute("SELECT value FROM users_likes_posts_rel WHERE post_id = ? AND user_id = ?", post_id, getUserId()).first[0] == opinion    
+        return getDB().execute("SELECT value FROM users_likes_posts_rel WHERE post_id = ? AND user_id = ?", post_id, getUserId()).first[0].to_i == opinion    
     end
 
     #Funktion som kollar ifall användare har gillat/ogillat post
